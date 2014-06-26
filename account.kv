@@ -8,7 +8,7 @@
 	pos_hint: { "center_x" : 0.5, "center_y" : 0.5 }
 
 <LongButton@Button>:
-	font_name: "font.ttf"
+	font_name: "res/font.ttf"
 	size: 300, 60
 	size_hint: None, None
 
@@ -19,16 +19,52 @@
 
 <NewLabel@Label>:
 	font_size: 24
-	font_name: "font.ttf"
+	font_name: "res/font.ttf"
 	halign: "left"
 	color: [0, 0, 0, 1]
 	size_hint: None, None
 
 <NewTextInput@TextInput>:
 	font_size: 24
-	font_name: "font.ttf"
+	font_name: "res/font.ttf"
 	size_hint: None, None
 	multiline: False
+
+### Classes ###
+
+<AddStack,ExportStack>:
+	height: self.minimum_height
+	size_hint_y: None
+
+<AddRow>:
+	height: 50
+	size_hint_y: None
+	SquareButton:
+		text: u"\xD7" # u"\u00D7" or "×"
+		pos_hint: { "center_x" : 0.12, "center_y" : 0.5 }
+		background_color: [1, 0, 0, 1]
+		on_release: root.delCourse() # Create method
+	Button:
+		text: root.course
+		font_size: 24
+		font_name: "res/font.ttf"
+		text_size: self.size[0] - 20, self.size[1] - 10
+		halign: "left"
+		size: 360, 40
+		size_hint: None, None
+		pos_hint: { "center_x" : 0.55, "center_y" : 0.5 }
+		on_release: root.applyCourse() # Create method
+	
+<ExportRow>:
+	height: 50
+	size_hint_y: None
+	NewLabel:
+		text: root.month
+		text_size: 400, None
+		pos_hint: { "center_x" : 0.5, "center_y" : 0.5 }
+	Switch:
+		active: True
+		pos_hint: { "center_x" : 0.8, "center_y" : 0.5 }
 
 ### ScreenManager ###
 
@@ -46,7 +82,7 @@ ScreenNexus:
 	name: "main"
 	NewLayout:
 		Image:
-			source: "logo.png"
+			source: "res/logo.png"
 			size: 240, 240
 			size_hint: None, None
 			pos_hint: { "center_x" : 0.5, "center_y" : 0.75 }
@@ -55,7 +91,7 @@ ScreenNexus:
 			text: "Kurs hinzufügen"
 			font_size: 28
 			pos_hint: { "center_x" : 0.5, "center_y" : 0.48 }
-			on_release: app.root.current = "add" # Catch Exceptions
+			on_release: app.root.current = "add"
 		NewLabel:
 			text: "Datum:"
 			text_size: 300, None
@@ -64,7 +100,7 @@ ScreenNexus:
 			text: "24.06.2014"
 			size: 200, 40
 			pos_hint: { "center_x" : 0.6, "center_y" : 0.4 }
-			on_text_validate: app.root.current = "add" # Catch Exceptions
+			on_text_validate: app.root.current = "add"
 		LongButton:
 			text: "Abrechnung exportieren"
 			font_size: 22
@@ -81,12 +117,12 @@ ScreenNexus:
 		SquareButton:
 			text: "+"
 			pos_hint: { "center_x" : 0.12, "center_y" : 0.85 }
-			on_release: root.newCourse(new_name.text) # Create method
+			on_release: root.newCourse(new_name.text)
 		NewTextInput:
 			id: new_name
 			size: 360, 40
 			pos_hint: { "center_x" : 0.55, "center_y" : 0.85 }
-			on_text_validate: root.newCourse(self.text) # Create method
+			on_text_validate: root.newCourse(self.text)
 		SquareButton:
 			text: "<" # u"\u21A9"
 			pos_hint: { "center_x" : 0.12, "center_y" : 0.1 }
@@ -96,31 +132,7 @@ ScreenNexus:
 			height: 450
 			size_hint_y: None
 			pos_hint: { "center_y" : 0.46875 }
-			StackLayout:
-				height: self.minimum_height
-				size_hint_y: None
-			
-			# Create dynamically:
-				FloatLayout:
-					height: 50
-					size_hint_y: None
-					SquareButton:
-						id: del1
-						text: u"\xD7" # u"\u00D7" or "×"
-						pos_hint: { "center_x" : 0.12, "center_y" : 0.5 }
-						background_color: [1, 0, 0, 1]
-						on_release: root.delCourse(self.id) # Create method
-					Button:
-						id: apply1
-						text: "Shuffle Trainer"
-						font_size: 24
-						font_name: "font.ttf"
-						text_size: self.size[0] - 20, self.size[1] - 10
-						halign: "left"
-						size: 360, 40
-						size_hint: None, None
-						pos_hint: { "center_x" : 0.55, "center_y" : 0.5 }
-						on_release: root.applyCourse(self.id) # Create method
+			AddStack:
 
 <ExportScreen>:
 	name: "export"
@@ -132,11 +144,11 @@ ScreenNexus:
 		Button:
 			text: "Exportieren"
 			font_size: 24
-			font_name: "font.ttf"
+			font_name: "res/font.ttf"
 			size: 200, 40
 			size_hint: None, None
 			pos_hint: { "center_x" : 0.5, "center_y" : 0.1 }
-			on_release: root.exportMonths() # Create method
+			on_release: root.createAccounting() # Create method
 		SquareButton:
 			text: "<" # u"\u21A9"
 			pos_hint: { "center_x" : 0.12, "center_y" : 0.1 }
@@ -146,22 +158,5 @@ ScreenNexus:
 			height: 500
 			size_hint_y: None
 			pos_hint: { "center_y" : 0.5 }
-			StackLayout:
-				height: self.minimum_height
-				size_hint_y: None
-				
-				# Create dynamically:
-				FloatLayout:
-					height: 50
-					size_hint_y: None
-					NewLabel:
-						text: "Juni 2014"
-						text_size: 400, None
-						pos_hint: { "center_x" : 0.5, "center_y" : 0.5 }
-					Switch:
-						active: True
-						pos_hint: { "center_x" : 0.8, "center_y" : 0.5 }
+			ExportStack:
 		
-
-
-
