@@ -53,7 +53,7 @@
 		size: 360, 40
 		size_hint: None, None
 		pos_hint: { "center_x" : 0.55, "center_y" : 0.5 }
-		on_release: root.applyCourse() # Create method
+		on_release: root.applyCourse(app.root.get_screen("main").children[0].children) # Create method
 	
 <ExportRow>:
 	height: 50
@@ -97,7 +97,7 @@ ScreenNexus:
 			text_size: 300, None
 			pos_hint: { "center_x" : 0.5, "center_y" : 0.4 }
 		NewTextInput:
-			text: "24.06.2014"
+			text: root.date
 			size: 200, 40
 			pos_hint: { "center_x" : 0.6, "center_y" : 0.4 }
 			on_text_validate: app.root.current = "add"
@@ -117,12 +117,12 @@ ScreenNexus:
 		SquareButton:
 			text: "+"
 			pos_hint: { "center_x" : 0.12, "center_y" : 0.85 }
-			on_release: root.newCourse(new_name.text)
+			on_release: root.newCourse(new_name.text, self.parent.children)
 		NewTextInput:
 			id: new_name
 			size: 360, 40
 			pos_hint: { "center_x" : 0.55, "center_y" : 0.85 }
-			on_text_validate: root.newCourse(self.text)
+			on_text_validate: root.newCourse(self.text, self.parent.children)
 		SquareButton:
 			text: "<" # u"\u21A9"
 			pos_hint: { "center_x" : 0.12, "center_y" : 0.1 }

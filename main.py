@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import sys, os
-from kivy.app import App
+import os
+from datetime import date
 
+from kivy.app import App
 from kivy.core.image import Image
 from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle
@@ -25,7 +26,7 @@ class AddStack(StackLayout) :
 		
 	def update(self) :
 		self.clear_widgets()
-		template = open(os.path.join("res/template.txt"))
+		template = open(os.path.join("res", "template.txt"))
 		for line in template :
 			if line[0] == "." : # Save Courses with a leading "."
 				self.add_widget(AddRow(line[1:]))
@@ -40,7 +41,7 @@ class ExportStack(StackLayout) :
 		
 	def update(self) :
 		self.clear_widgets()
-		template = open(os.path.join("res/template.txt"))
+		template = open(os.path.join("res", "template.txt"))
 		for line in template :
 			if line[0] == "*" : # Save months with a leading "*"
 				self.add_widget(ExportRow(line[1:]))
@@ -55,13 +56,18 @@ class AddRow(FloatLayout) :
 		super(AddRow, self).__init__(*args, **kwargs)
 		self.course = course.strip("\n")
 	
-	def applyCourse(self) :
-		pass
+	def applyCourse(self, children) :
+		for child in children :
+			if "NewTextInput" in str(child) :
+				date = child.text
 	
 	def delCourse(self) :
-		template = open(os.path.join("res/template.txt"), "r+")
-		template_lines = template.readlines().remove("." + self.course + "\n")
-		template.writelines(template_lines)
+		new_template = open(os.path.join("res", "template.txt")).readlines()
+		new_template.remove("." + self.course + "\n")
+		template = open(os.path.join("res", "template.txt"), "w")
+		template.writelines(new_template)
+		template.close()
+		self.parent.update()
 
 
 class ExportRow(FloatLayout) :
@@ -80,7 +86,7 @@ class ScreenNexus(ScreenManager) :
 
 	def __init__(self, *args, **kwargs) :
 		super(ScreenNexus, self).__init__(*args, **kwargs)
-		texture = Image("res/tile.png").texture
+		texture = Image(os.path.join("res", "tile.png")).texture
 		texture.wrap = "repeat"
 		texture.uvsize = (12, 24)
 		
@@ -94,17 +100,22 @@ class ScreenNexus(ScreenManager) :
 
 class MainScreen(Screen) :
 	
-	pass
+	date = StringProperty("")
+	
+	def __init__(self, *args, **kwargs) :
+		super(MainScreen, self).__init__(*args, **kwargs)
+		today = date.today()
+		self.date = str(today.day).zfill(2) + "." + str(today.month).zfill(2) + "." + str(today.year).zfill(2)
 
 
 class AddScreen(Screen) :
 	
-	def newCourse(self, name) :
-		template = open(os.path.join("res/template.txt"), "a")
+	def newCourse(self, name, children) :
+		template = open(os.path.join("res", "template.txt"), "a")
 		template.write("." + name + "\n")
 		template.close()
 		
-		for child in self.children[0].children :
+		for child in children :
 			if type(child) == ScrollView :
 				stack = child.children[0]
 				stack.update()

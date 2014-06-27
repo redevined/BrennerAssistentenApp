@@ -1,13 +1,4 @@
-.Shuffle Trainer
-.Goldstar **
-.Bronze
-.Silber
-.Tanzkreis *
-.Latino Tanzkreis
-*Januar 2014
-*Februar 2014
-*März 2014
-*April 2014
-*Mai 2014
-*Juni 2014
 
+.TestKurs 1
+.TestKurs 2
+.TestKurs 3
