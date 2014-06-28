@@ -26,11 +26,10 @@ class AddStack(StackLayout) :
 		
 	def update(self) :
 		self.clear_widgets()
-		template = open(os.path.join("res", "template.txt"))
-		for line in template :
-			if line[0] == "." : # Save Courses with a leading "."
-				self.add_widget(AddRow(line[1:]))
-		template.close()
+		courses = open(os.path.join("res", "courses")) # Read courses from file
+		for line in courses :
+			self.add_widget(AddRow(line.strip("\n"))) # Add widget for every course
+		courses.close()
 
 
 class ExportStack(StackLayout) :
@@ -41,11 +40,9 @@ class ExportStack(StackLayout) :
 		
 	def update(self) :
 		self.clear_widgets()
-		template = open(os.path.join("res", "template.txt"))
-		for line in template :
-			if line[0] == "*" : # Save months with a leading "*"
-				self.add_widget(ExportRow(line[1:]))
-		template.close()
+		indices = map(lambda s : s.replace("_", " "), os.listdir(os.path.join("res", "indices"))) # Get each indexed month
+		for index in indices :
+			self.add_widget(ExportRow(index)) # Add widget for every month
 
 
 class AddRow(FloatLayout) :
@@ -54,20 +51,35 @@ class AddRow(FloatLayout) :
 	
 	def __init__(self, course, *args, **kwargs) :
 		super(AddRow, self).__init__(*args, **kwargs)
-		self.course = course.strip("\n")
+		self.course = course
 	
 	def applyCourse(self, children) :
-		for child in children :
+		months = ("Januar", "Februar", "M\xC3rz", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember")
+		
+		for child in children : # Iterate over child widgets
 			if "NewTextInput" in str(child) :
-				date = child.text
+				new_date = child.text # Get the text of the TextInput widget
+		for limiter in (" ", ".", "/", "-") :
+			if limiter in new_date :
+				new_date = new_date.split(limiter) # Split the date string by one of the valid delimiters
+		
+		try :
+			date(*map(lambda i : int(i), new_date[::-1])) # Check if date is valid
+		except Exception :
+			print("Invalid date or date format") # Throw Error ==> TO-DO: Android popup!
+		else :
+			index = months[int(new_date[1])-1] + "_" + new_date[2] # Create an index name
+			indices = open(os.path.join("res", "indices", index), "a") # Open index if existing, create new if not
+			indices.write("{1}.{2}.{3} {0}\n".format(self.course, *new_date)) # Append date + course to index
+			indices.close()
 	
 	def delCourse(self) :
-		new_template = open(os.path.join("res", "template.txt")).readlines()
-		new_template.remove("." + self.course + "\n")
-		template = open(os.path.join("res", "template.txt"), "w")
-		template.writelines(new_template)
-		template.close()
-		self.parent.update()
+		new_courses = open(os.path.join("res", "courses")).readlines()
+		new_courses.remove(self.course + "\n") # Delete course from lines of file
+		courses = open(os.path.join("res", "courses"), "w")
+		courses.writelines(new_courses) # Write back the new lines
+		courses.close()
+		self.parent.update() # Update AddStack widget
 
 
 class ExportRow(FloatLayout) :
@@ -76,7 +88,7 @@ class ExportRow(FloatLayout) :
 	
 	def __init__(self, month, *args, **kwargs) :
 		super(ExportRow, self).__init__(*args, **kwargs)
-		self.month = month.strip("\n")
+		self.month = month
 
 
 ### Screen Manager ###
@@ -86,11 +98,11 @@ class ScreenNexus(ScreenManager) :
 
 	def __init__(self, *args, **kwargs) :
 		super(ScreenNexus, self).__init__(*args, **kwargs)
-		texture = Image(os.path.join("res", "tile.png")).texture
+		texture = Image(os.path.join("res", "tile.png")).texture # Create background texture
 		texture.wrap = "repeat"
 		texture.uvsize = (12, 24)
 		
-		with self.canvas.before :
+		with self.canvas.before : # Draw background
 			Color(1, 1, 1)
 			Rectangle(texture = texture, size = (Window.width, Window.height), pos = self.pos)
 
@@ -104,29 +116,29 @@ class MainScreen(Screen) :
 	
 	def __init__(self, *args, **kwargs) :
 		super(MainScreen, self).__init__(*args, **kwargs)
-		today = date.today()
+		today = date.today() # Get date of today
 		self.date = str(today.day).zfill(2) + "." + str(today.month).zfill(2) + "." + str(today.year).zfill(2)
 
 
 class AddScreen(Screen) :
 	
 	def newCourse(self, name, children) :
-		template = open(os.path.join("res", "template.txt"), "a")
-		template.write("." + name + "\n")
-		template.close()
+		courses = open(os.path.join("res", "courses"), "a")
+		courses.write(name + "\n") # Append name of new course to courses
+		courses.close()
 		
-		for child in children :
-			if type(child) == ScrollView :
+		for child in children : # Iterate over child widgets
+			if isinstance(child, ScrollView) :
 				stack = child.children[0]
-				stack.update()
+				stack.update() # Update AddStack widget
 			elif "NewTextInput" in str(child) :
-				child.text = ""
+				child.text = "" # Remove text of TextInput widget
 
 
 class ExportScreen(Screen) :
 	
 	def createAccounting(self) :
-		pass
+		pass # TO-DO: Create export algorithm
 
 
 ### App ###
@@ -137,8 +149,12 @@ class AccountApp(App) :
 	def build(self) :
 		return ScreenNexus().add_widget(MainScreen())
 		
+	def getWidget(self) :
+		pass # TO-DO: Create function to get widgets
+		
 
 if __name__ == "__main__" :
-	AccountApp().run()
+	app = AccountApp()
+	app.run()
 
 
