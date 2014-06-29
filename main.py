@@ -7,12 +7,13 @@ from kivy.app import App
 from kivy.core.image import Image
 from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.stacklayout import StackLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.textinput import TextInput
 from kivy.properties import StringProperty
+from kivy.uix.button import Button
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.stacklayout import StackLayout
+from kivy.uix.textinput import TextInput
 
 
 ### Classes ###
@@ -40,9 +41,13 @@ class ExportStack(StackLayout) :
 		
 	def update(self) :
 		self.clear_widgets()
-		indices = map(lambda s : s.replace("_", " "), os.listdir(os.path.join("res", "indices"))) # Get each indexed month
+		months = ("Januar", "Februar", "Maerz", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember")
+		indices = map(lambda s : s.split("_"), os.listdir(os.path.join("res", "indices"))) # Get each indexed month
+		
 		for index in indices :
-			self.add_widget(ExportRow(index)) # Add widget for every month
+			index[0] = months[int(index[0])-1]
+			index_name = " ".join(index)
+			self.add_widget(ExportRow(index_name)) # Add widget for every month
 
 
 class AddRow(FloatLayout) :
@@ -53,25 +58,22 @@ class AddRow(FloatLayout) :
 		super(AddRow, self).__init__(*args, **kwargs)
 		self.course = course
 	
-	def applyCourse(self, children) :
-		months = ("Januar", "Februar", "M\xC3rz", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember")
-		
-		for child in children : # Iterate over child widgets
-			if "NewTextInput" in str(child) :
-				new_date = child.text # Get the text of the TextInput widget
+	def applyCourse(self) :
+		new_date = app.getWidget("main", FloatLayout, TextInput).text
 		for limiter in (" ", ".", "/", "-") :
 			if limiter in new_date :
-				new_date = new_date.split(limiter) # Split the date string by one of the valid delimiters
+				new_date = map(lambda d : d.zfill(2), new_date.split(limiter)) # Split the date string by one of the valid delimiters
 		
 		try :
 			date(*map(lambda i : int(i), new_date[::-1])) # Check if date is valid
 		except Exception :
 			print("Invalid date or date format") # Throw Error ==> TO-DO: Android popup!
 		else :
-			index = months[int(new_date[1])-1] + "_" + new_date[2] # Create an index name
-			indices = open(os.path.join("res", "indices", index), "a") # Open index if existing, create new if not
-			indices.write("{1}.{2}.{3} {0}\n".format(self.course, *new_date)) # Append date + course to index
-			indices.close()
+			index_name = new_date[1] + "_" + new_date[2] # months[int(new_date[1])-1] + "_" + new_date[2] # Create an index name
+			index = open(os.path.join("res", "indices", index_name), "a") # Open index if existing, create new if not
+			index.write("{1}.{2}.{3} {0}\n".format(self.course, *new_date)) # Append date + course to index
+			index.close()
+			app.getWidget("export", FloatLayout, ScrollView, ExportStack).update()
 	
 	def delCourse(self) :
 		new_courses = open(os.path.join("res", "courses")).readlines()
@@ -122,17 +124,13 @@ class MainScreen(Screen) :
 
 class AddScreen(Screen) :
 	
-	def newCourse(self, name, children) :
+	def newCourse(self, name) :
 		courses = open(os.path.join("res", "courses"), "a")
 		courses.write(name + "\n") # Append name of new course to courses
 		courses.close()
 		
-		for child in children : # Iterate over child widgets
-			if isinstance(child, ScrollView) :
-				stack = child.children[0]
-				stack.update() # Update AddStack widget
-			elif "NewTextInput" in str(child) :
-				child.text = "" # Remove text of TextInput widget
+		app.getWidget("add", FloatLayout, ScrollView, AddStack).update()
+		app.getWidget("add", FloatLayout, TextInput).text = "" # Reset TextInput
 
 
 class ExportScreen(Screen) :
@@ -149,9 +147,14 @@ class AccountApp(App) :
 	def build(self) :
 		return ScreenNexus().add_widget(MainScreen())
 		
-	def getWidget(self) :
-		pass # TO-DO: Create function to get widgets
-		
+	def getWidget(self, screen, *path) : # TO-DO: Use function :D
+		widget = self.root.get_screen(screen)
+		for wclass in path :
+			for child in widget.children :
+				if isinstance(child, wclass) :
+					widget = child
+		return widget
+
 
 if __name__ == "__main__" :
 	app = AccountApp()

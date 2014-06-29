@@ -64,7 +64,7 @@
 		size: 360, 40
 		size_hint: None, None
 		pos_hint: { "center_x" : 0.55, "center_y" : 0.5 }
-		on_release: root.applyCourse(app.root.get_screen("main").children[0].children); app.root.current = "main"
+		on_release: root.applyCourse(); app.root.current = "main"
 
 
 <ExportRow>:
@@ -148,13 +148,13 @@ ScreenNexus:
 		SquareButton:
 			text: "+"
 			pos_hint: { "center_x" : 0.12, "center_y" : 0.85 }
-			on_release: root.newCourse(new_name.text, self.parent.children)
+			on_release: root.newCourse(new_name.text)
 			
 		NewTextInput:
 			id: new_name
 			size: 360, 40
 			pos_hint: { "center_x" : 0.55, "center_y" : 0.85 }
-			on_text_validate: root.newCourse(self.text, self.parent.children)
+			on_text_validate: root.newCourse(self.text)
 			
 		SquareButton:
 			text: "<" # u"\u21A9"
