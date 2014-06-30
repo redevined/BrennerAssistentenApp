@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-from datetime import date
+from datetime import date, datetime
 
 from kivy.app import App
 from kivy.core.image import Image
@@ -12,6 +12,7 @@ from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.spinner import Spinner
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.textinput import TextInput
 
@@ -59,7 +60,9 @@ class AddRow(FloatLayout) :
 		self.course = course
 	
 	def applyCourse(self) :
-		new_date = app.getWidget("main", FloatLayout, TextInput).text
+		new_date = app.getWidgetsFromPath("main", FloatLayout, TextInput)[0].text
+		new_times = [widget.text for widget in app.getWidgetsFromPath("main", FloatLayout, Spinner)][::-1]
+		
 		for limiter in (" ", ".", "/", "-") :
 			if limiter in new_date :
 				new_date = map(lambda d : d.zfill(2), new_date.split(limiter)) # Split the date string by one of the valid delimiters
@@ -69,11 +72,11 @@ class AddRow(FloatLayout) :
 		except Exception :
 			print("Invalid date or date format") # Throw Error ==> TO-DO: Android popup!
 		else :
-			index_name = new_date[1] + "_" + new_date[2] # months[int(new_date[1])-1] + "_" + new_date[2] # Create an index name
+			index_name = new_date[1] + "_" + new_date[2] # Create an index name
 			index = open(os.path.join("res", "indices", index_name), "a") # Open index if existing, create new if not
-			index.write("{1}.{2}.{3} {0}\n".format(self.course, *new_date)) # Append date + course to index
+			index.write("{1}.{2}.{3}_{4}-{5}_{0}\n".format(self.course, *new_date+new_times)) # Append date + time + course to index
 			index.close()
-			app.getWidget("export", FloatLayout, ScrollView, ExportStack).update()
+			app.getWidgetsFromPath("export", FloatLayout, ScrollView, ExportStack)[0].update()
 	
 	def delCourse(self) :
 		new_courses = open(os.path.join("res", "courses")).readlines()
@@ -115,22 +118,27 @@ class ScreenNexus(ScreenManager) :
 class MainScreen(Screen) :
 	
 	date = StringProperty("")
+	begin_time = StringProperty("")
+	end_time = StringProperty("")
 	
 	def __init__(self, *args, **kwargs) :
 		super(MainScreen, self).__init__(*args, **kwargs)
-		today = date.today() # Get date of today
-		self.date = str(today.day).zfill(2) + "." + str(today.month).zfill(2) + "." + str(today.year).zfill(2)
+		now = datetime.today() # Get date of today
+		self.date = str(now.day).zfill(2) + "." + str(now.month).zfill(2) + "." + str(now.year).zfill(4)
+		self.begin_time = str(now.hour).zfill(2) + ":" + str((now.minute//15+1)%4*15).zfill(2)
+		self.end_time = str(now.hour+1).zfill(2) + ":" + str((now.minute//15+1)%4*15).zfill(2)
 
 
 class AddScreen(Screen) :
 	
-	def newCourse(self, name) :
+	def newCourse(self) :
 		courses = open(os.path.join("res", "courses"), "a")
+		name = app.getWidgetsFromPath("add", FloatLayout, TextInput)[0].text
 		courses.write(name + "\n") # Append name of new course to courses
 		courses.close()
 		
-		app.getWidget("add", FloatLayout, ScrollView, AddStack).update()
-		app.getWidget("add", FloatLayout, TextInput).text = "" # Reset TextInput
+		app.getWidgetsFromPath("add", FloatLayout, ScrollView, AddStack)[0].update()
+		app.getWidgetsFromPath("add", FloatLayout, TextInput)[0].text = "" # Reset TextInput
 
 
 class ExportScreen(Screen) :
@@ -147,13 +155,12 @@ class AccountApp(App) :
 	def build(self) :
 		return ScreenNexus().add_widget(MainScreen())
 		
-	def getWidget(self, screen, *path) : # TO-DO: Use function :D
+	def getWidgetsFromPath(self, screen, *path) :
 		widget = self.root.get_screen(screen)
 		for wclass in path :
-			for child in widget.children :
-				if isinstance(child, wclass) :
-					widget = child
-		return widget
+			widgets = [child for child in widget.children if isinstance(child, wclass)]
+			widget = widgets[0]
+		return widgets
 
 
 if __name__ == "__main__" :

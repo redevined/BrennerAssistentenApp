@@ -37,6 +37,22 @@
 	multiline: False
 
 
+<NewOpt@SpinnerOption>:
+	font_size: 20
+	font_name: "res/font.ttf"
+	height: 40
+	size_hint_y: None
+
+
+<TimeDropDown@Spinner>:
+	values: [str(h).zfill(2) + ":" + str(m*15).zfill(2) for h in range(24) for m in range(4)]
+	font_size: 20
+	font_name: "res/font.ttf"
+	size: 80, 40
+	size_hint: None, None
+	option_cls: "NewOpt"
+
+
 ### Classes ###
 
 
@@ -86,6 +102,7 @@
 
 ScreenNexus:
 
+	# TO-DO: New Screen
 	MainScreen:
 		on_enter: root.transition = SlideTransition(direction = "left")
 		
@@ -128,10 +145,29 @@ ScreenNexus:
 			pos_hint: { "center_x" : 0.6, "center_y" : 0.4 }
 			on_text_validate: app.root.current = "add"
 			
+		NewLabel:
+			text: "Zeit:"
+			text_size: 300, None
+			pos_hint: { "center_x" : 0.5, "center_y" : 0.34 }
+		
+		TimeDropDown:
+			text: root.begin_time
+			pos_hint: { "center_x" : 0.48, "center_y" : 0.34 }
+		
+		Label:
+			text: "-"
+			font_size: 24
+			color: 0, 0, 0, 1
+			pos_hint: { "center_x" : 0.6, "center_y" : 0.34 }
+		
+		TimeDropDown:
+			text: root.end_time
+			pos_hint: { "center_x" : 0.72, "center_y" : 0.34 }
+			
 		LongButton:
 			text: "Abrechnung exportieren"
 			font_size: 22
-			pos_hint: { "center_x" : 0.5, "center_y" : 0.25 }
+			pos_hint: { "center_x" : 0.5, "center_y" : 0.2 }
 			on_release: app.root.current = "export"
 
 
@@ -148,13 +184,12 @@ ScreenNexus:
 		SquareButton:
 			text: "+"
 			pos_hint: { "center_x" : 0.12, "center_y" : 0.85 }
-			on_release: root.newCourse(new_name.text)
+			on_release: root.newCourse()
 			
 		NewTextInput:
-			id: new_name
 			size: 360, 40
 			pos_hint: { "center_x" : 0.55, "center_y" : 0.85 }
-			on_text_validate: root.newCourse(self.text)
+			on_text_validate: root.newCourse()
 			
 		SquareButton:
 			text: "<" # u"\u21A9"
