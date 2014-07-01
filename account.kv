@@ -97,27 +97,35 @@
 		pos_hint: { "center_x" : 0.8, "center_y" : 0.5 }
 
 
-### ScreenManager ###
-
-
-ScreenNexus:
-
-	# TO-DO: New Screen
-	MainScreen:
-		on_enter: root.transition = SlideTransition(direction = "left")
-		
-	AddScreen:
-		on_enter: root.transition = SlideTransition(direction = "right")
-		
-	ExportScreen:
-		on_enter: root.transition = SlideTransition(direction = "right")
-
-
 ### Screens ###
+
+
+<InitScreen>:
+	name: "init"
+	
+	NewLayout:
+		
+		NewLabel:
+			text: "Name:"
+			text_size: 400, None
+			pos_hint: { "center_x" : 0.5, "center_y" : 0.6 }
+		
+		NewTextInput:
+			size: 300, 40
+			size_hint: None, None
+			pos_hint: { "center_x" : 0.6, "center_y" : 0.6 }
+			on_text_validate: root.createName(); app.root.current = "main"
+		
+		LongButton:
+			text: "Weiter"
+			font_size: 28
+			pos_hint: { "center_x" : 0.5, "center_y" : 0.5 }
+			on_release: root.createName(); app.root.current = "main"
 
 
 <MainScreen>:
 	name: "main"
+	on_enter: self.parent.transition = SlideTransition(direction = "left")
 	
 	NewLayout:
 	
@@ -173,6 +181,7 @@ ScreenNexus:
 
 <AddScreen>:
 	name: "add"
+	on_enter: self.parent.transition = SlideTransition(direction = "right")
 	
 	NewLayout:
 	
@@ -206,6 +215,7 @@ ScreenNexus:
 
 <ExportScreen>:
 	name: "export"
+	on_enter: self.parent.transition = SlideTransition(direction = "right")
 	
 	NewLayout:
 	
@@ -234,4 +244,5 @@ ScreenNexus:
 			pos_hint: { "center_y" : 0.5 }
 			
 			ExportStack:
-		
+
+

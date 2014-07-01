@@ -115,6 +115,15 @@ class ScreenNexus(ScreenManager) :
 ### Screens ###
 
 
+class InitScreen(Screen) :
+
+	def createName(self) :
+		namefile = open(os.path.join("res", "username"), "w")
+		name = app.getWidgetsFromPath("init", FloatLayout, TextInput)[0].text
+		namefile.write(name)
+		namefile.close()
+
+
 class MainScreen(Screen) :
 	
 	date = StringProperty("")
@@ -151,16 +160,38 @@ class ExportScreen(Screen) :
 
 
 class AccountApp(App) :
-	
+
 	def build(self) :
-		return ScreenNexus().add_widget(MainScreen())
+		root = ScreenNexus()
+		screens = [ MainScreen(), AddScreen(), ExportScreen() ]
+		try :
+			open(os.path.join("res", "username")).close()
+		except Exception :
+			screens.insert(0, InitScreen())
+		
+		for screen in screens :
+			root.add_widget(screen)
+		return root
 		
 	def getWidgetsFromPath(self, screen, *path) :
-		widget = self.root.get_screen(screen)
+		widgets = [self.root.get_screen(screen)]
 		for wclass in path :
-			widgets = [child for child in widget.children if isinstance(child, wclass)]
-			widget = widgets[0]
+			widgets = [child for child in widgets[0].children if isinstance(child, wclass)]
 		return widgets
+	
+	def getAllWidgets(self) :
+		widgets = []
+		def getChildren(widget) :
+			widgets.append(widget)
+			try :
+				for child in widget.children :
+					getChildren(child)
+			except Exception :
+				pass
+		
+		for name in "main", "add", "export" :
+			getChildren(self.root.get_screen(name))
+		return map(lambda w : w.id, widgets)
 
 
 if __name__ == "__main__" :
