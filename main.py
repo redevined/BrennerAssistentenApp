@@ -159,7 +159,7 @@ class ExportScreen(Screen) :
 ### App ###
 
 
-class AccountApp(App) :
+class BrennerApp(App) :
 
 	def build(self) :
 		root = ScreenNexus()
@@ -191,7 +191,7 @@ class AccountApp(App) :
 		
 		for name in "main", "add", "export" :
 			getChildren(self.root.get_screen(name))
-		return map(lambda w : w.id, widgets)
+		return widgets
 
 
 if __name__ == "__main__" :
