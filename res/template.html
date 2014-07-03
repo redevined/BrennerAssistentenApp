@@ -1,9 +1,45 @@
 <!DOCTYPE html>
 
+<!--
+
+Heading Format:
+
+<h2>Abrechnung Juli 2014</h2>
+
+
+Table Row Format:
+
+<tr class="highlight_1">
+	<td class="small">
+		<p>01.07.2014</p>
+	</td>
+	<td class="small">
+		<p>19:00 - 20:30</p>
+	</td>
+	<td class="large">
+		<p>Kurs 1</p>
+	</td>
+</tr>
+
+Footer Line Format:
+
+<p>Assistent 1 | 01.07.2014</p>
+
+-->
+
 <html>
 <head>
 
 <style type="text/css">
+	
+	@font-face {
+		font-family: CustomFont;
+		src: url(font.ttf);
+	}
+	
+	body {
+		font-family: CustomFont;
+	}
 	
 	div {
 		position: absolute;
@@ -14,23 +50,35 @@
 	}
 	
 	#content {
-		text-align: left;
 		top: 30px;
 	}
 	
 	#footer {
 		font-size: 12px;
-		text-align: right;
 		bottom: 30px;
+	}
+	
+	.left {
+		width: 50%;
+		float: left;
+		text-align: left;
+	}
+	
+	.right {
+		width: 50%;
+		float: left;
+		text-align: right;
 	}
 	
 	table {
 		width: 100%;
 		line-height: 5px;
+		border-collapse: collapse;
+		text-align: left;
 	}
-
-	td {
-		height: 20px;
+	
+	#header {
+		border-bottom: 2px solid #444;
 	}
 	
 	#header p {
@@ -38,12 +86,21 @@
 	}
 	
 	.small {
-		width: 20%;
+		width: 25%;
 	}
 	
 	.large {
-		width: 60%;
+		width: 50%;
 	}
+	
+	.highlight_1 {
+		background-color: #79b;
+	}
+	
+	.highlight_2 {
+		background-color: #dee;
+	}
+
 	
 </style>
 
@@ -52,8 +109,7 @@
 
 <div id="content">
 
-<h2>Abrechnung Juli 2014</h2>
-<h3>Assistent 1</h3>
+<!-- Dynamic heading here -->
 
 	<table>
 	
@@ -68,42 +124,8 @@
 				<p>Kurs</p>
 			</td>
 		</tr>
-
-		<tr>
-			<td class="small">
-				<p>01.07.2014</p>
-			</td>
-			<td class="small">
-				<p>19:00 - 20:30</p>
-			</td>
-			<td class="large">
-				<p>Kurs 1</p>
-			</td>
-		</tr>
-	
-		<tr>
-			<td class="small">
-				<p>01.07.2014</p>
-			</td>
-			<td class="small">
-				<p>19:00 - 20:30</p>
-			</td>
-			<td class="large">
-				<p>Kurs 2</p>
-			</td>
-		</tr>
-	
-		<tr>
-			<td class="small">
-				<p>01.07.2014</p>
-			</td>
-			<td class="small">
-				<p>19:00 - 20:30</p>
-			</td>
-			<td class="large">
-				<p>Kurs 3</p>
-			</td>
-		</tr>
+		
+		<!-- Dynamic table rows here -->
 	
 	</table>
 
@@ -111,7 +133,12 @@
 
 <div id="footer">
 	<hr />
-	<p>erstellt durch die BrennerAssistentenApp</p>
+	<span class="left">
+		<!-- Dynamic footer here -->
+	</span>
+	<span class="right">
+		<p>erstellt durch die BrennerAssistentenApp</p>
+	</span>
 </div>
 
 </body>
