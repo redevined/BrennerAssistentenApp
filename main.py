@@ -46,7 +46,7 @@ class ExportStack(StackLayout) :
 		
 	def update(self) :
 		self.clear_widgets()
-		indices = os.listdir(os.path.join("res", "indices")) # Get each indexed month
+		indices = [index for index in os.listdir(os.path.join("res", "indices")) if index[0] != "."] # Get each indexed month
 		
 		for index in indices :
 			self.add_widget(ExportRow(index)) # Add widget for every month
