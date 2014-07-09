@@ -32,7 +32,7 @@ class AddStack(StackLayout) :
 		
 	def update(self) :
 		self.clear_widgets()
-		courses = open(os.path.join("res", "courses")) # Read courses from file
+		courses = open(os.path.join("res", "courses.txt")) # Read courses from file
 		for line in courses :
 			self.add_widget(AddRow(line.strip("\n"))) # Add widget for every course
 		courses.close()
@@ -84,9 +84,9 @@ class AddRow(FloatLayout) :
 			app.alert(error) # Throw Error ==> TO-DO: Android popup!
 	
 	def delCourse(self) :
-		new_courses = open(os.path.join("res", "courses")).readlines()
+		new_courses = open(os.path.join("res", "courses.txt")).readlines()
 		new_courses.remove(self.course + "\n") # Delete course from lines of file
-		courses = open(os.path.join("res", "courses"), "w")
+		courses = open(os.path.join("res", "courses.txt"), "w")
 		courses.writelines(new_courses) # Write back the new lines
 		courses.close()
 		self.parent.update() # Update AddStack widget
@@ -153,7 +153,7 @@ class MainScreen(Screen) :
 class AddScreen(Screen) :
 	
 	def newCourse(self) :
-		courses = open(os.path.join("res", "courses"), "a")
+		courses = open(os.path.join("res", "courses.txt"), "a")
 		name = app.getWidgetsFromPath("add", FloatLayout, TextInput)[0].text
 		courses.write(name + "\n") # Append name of new course to courses
 		courses.close()

@@ -1,0 +1,3 @@
+title=Brenner Assistenten App
+author=redevined
+orientation=portrait
