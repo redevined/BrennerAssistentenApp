@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import os, htmlport
+import os, htmlport, json
 from datetime import datetime, date, time
-from androidhelper import Android
-# from androidfake import Android
+# from androidhelper import Android
+from androidfake import Android
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -135,7 +135,6 @@ class MainScreen(Screen) :
 		return ".".join(str(self._date).split("-")[::-1])
 	
 	def getTime(self) :
-		print self._time
 		return " - ".join(str(t).rsplit(":", 1)[0] for t in self._time)
 	
 	def setDate(self) :
@@ -196,10 +195,36 @@ class ExportScreen(Screen) :
 ### App ###
 
 
+class Store() :
+	
+	def __init__(self, name) :
+		self.name = name
+		if os.path.exists(name) :
+			self.data = self.load()
+		else :
+			self.data = {}
+	
+	def __del__(self) :
+		self.save()
+	
+	def __getitem__(self, attr) :
+		return self.data[attr]
+	
+	def __setitem__(self, attr, val) :
+		self.data[attr] = val
+	
+	def load(self) :
+		return json.load(open(self.name))
+	
+	def save(self) :
+		json.dump(self.data, open(self.name, "w"))
+
+
 class BrennerApp(App) :
 
 	def build(self) :
 		Builder.load_file("style.kv")
+		self.store = Store("config.json")
 		
 		root = ScreenNexus()
 		screens = [ MainScreen(), AddScreen(), ExportScreen() ]

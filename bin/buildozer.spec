@@ -10,7 +10,7 @@ package.name = brennerapp
 package.domain = org.brennerapp
 
 # (str) Source code where the main.py live
-source.dir = .
+source.dir = ..
 
 # (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas,txt,ttf,html
@@ -41,7 +41,7 @@ requirements = kivy
 #presplash.filename = %(source.dir)s/data/presplash.png
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/res/icon.png
+icon.filename = %(source.dir)s/icon.png
 
 # (str) Supported orientation (one of landscape, portrait or all)
 orientation = portrait
