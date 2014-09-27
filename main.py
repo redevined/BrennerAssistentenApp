@@ -29,10 +29,8 @@ class AddStack(StackLayout) :
 		
 	def update(self) :
 		self.clear_widgets()
-		courses = open(os.path.join("res", "courses.txt"))
-		for line in courses :
+		for line in app.store["courses"] :
 			self.add_widget(AddRow(line.strip("\n")))
-		courses.close()
 
 
 class ExportStack(StackLayout) :
@@ -43,9 +41,7 @@ class ExportStack(StackLayout) :
 		
 	def update(self) :
 		self.clear_widgets()
-		indices = [index for index in os.listdir(os.path.join("res", "indices")) if index[0] != "."] 
-		
-		for index in indices :
+		for index in app.store["indices"].keys() :
 			self.add_widget(ExportRow(index))
 
 
@@ -58,26 +54,24 @@ class AddRow(FloatLayout) :
 		self.course = course
 	
 	def applyCourse(self) :
-		months = ("Januar", "Februar", "Marz", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember")
-		
 		main_screen = app.root.get_screen("main")
 		new_date = main_screen._date
 		new_time = main_screen._time
 		
-		index_name = months[new_date.month-1] + " " + str(new_date.year)
-		index = open(os.path.join("res", "indices", index_name), "a")
-		index.write("{}_{}_{}\n".format(main_screen.getDate(), main_screen.getTime(), self.course))
-		index.close()
+		ind = app.store["indices"]
+		indname = ("Januar", "Februar", "Marz", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember")[new_date.month-1] + " " + str(new_date.year)
+		info = (main_screen.getDate(), main_screen.getTime(), self.course)
+		
+		if ind.has_key(indname) :
+			ind[indname].append(info)
+		else :
+			ind[indname] = [info]
 		
 		app.getWidgetsFromPath("export", FloatLayout, ScrollView, ExportStack)[0].update()
 		droid.makeToast("Course saved.")
 	
 	def delCourse(self) :
-		new_courses = open(os.path.join("res", "courses.txt")).readlines()
-		new_courses.remove(self.course + "\n")
-		courses = open(os.path.join("res", "courses.txt"), "w")
-		courses.writelines(new_courses)
-		courses.close()
+		app.store["courses"].remove(self.course)
 		self.parent.update()
 
 
@@ -113,11 +107,8 @@ class InitScreen(Screen) :
 
 	def createName(self) :
 		name = app.getWidgetsFromPath("init", FloatLayout, TextInput)[0].text
-		if name != "" :
-			namefile = open(os.path.join("res", "username"), "w")
-			namefile.write(name)
-			droid.makeToast("Welcome " + name + ".")
-			namefile.close()
+		app.store["user"] = name
+		droid.makeToast("Welcome " + name + ".")
 
 
 class MainScreen(Screen) :
@@ -160,10 +151,8 @@ class MainScreen(Screen) :
 class AddScreen(Screen) :
 	
 	def newCourse(self) :
-		courses = open(os.path.join("res", "courses.txt"), "a")
 		name = app.getWidgetsFromPath("add", FloatLayout, TextInput)[0].text
-		courses.write(name + "\n")
-		courses.close()
+		app.store["courses"].append(name)
 		
 		app.getWidgetsFromPath("add", FloatLayout, ScrollView, AddStack)[0].update()
 		app.getWidgetsFromPath("add", FloatLayout, TextInput)[0].text = ""
@@ -172,22 +161,19 @@ class AddScreen(Screen) :
 class ExportScreen(Screen) :
 	
 	def createAccounting(self) :
-		name = open(os.path.join("res", "username")).readlines()[0]
 		rows = app.getWidgetsFromPath("export", FloatLayout, ScrollView, ExportStack, ExportRow)
-		
 		selected = [row.children[1].text for row in rows if row.children[0].active]
-		indices = [open(os.path.join("res", "indices", index)) for index in selected]
+		ind = { key: value for (key, value) in app.store["indices"].items() if key in selected }
 		
-		path = "/storage/sdcard0/BrennerAbrechnungen"
-		# path = "/tmp"
-		error = htmlport.export(name, path, indices)
+		# path = "/storage/sdcard0/BrennerAbrechnungen"
+		path = "/tmp"
+		error = htmlport.export(app.store["user"], path, ind)
 		
 		if error :
 			droid.makeToast(error)
 		else :
+			app.store["indices"] = { key: value for (key, value) in app.store["indices"].items() if key not in selected }
 			droid.makeToast("Successfully exported accounting.")
-			for index_name in selected :
-				os.remove(os.path.join("res", "indices", index_name))
 		
 		app.getWidgetsFromPath("export", FloatLayout, ScrollView, ExportStack)[0].update()
 
@@ -202,7 +188,7 @@ class Store() :
 		if os.path.exists(name) :
 			self.data = self.load()
 		else :
-			self.data = {}
+			self.data = { "courses": [], "indices": {} }
 	
 	def __del__(self) :
 		self.save()
@@ -228,14 +214,15 @@ class BrennerApp(App) :
 		
 		root = ScreenNexus()
 		screens = [ MainScreen(), AddScreen(), ExportScreen() ]
-		try :
-			open(os.path.join("res", "username")).close()
-		except Exception :
+		if not self.store.data.has_key("user") :
 			screens.insert(0, InitScreen())
 		
 		for screen in screens :
 			root.add_widget(screen)
 		return root
+	
+	def on_stop(self) :
+		del(self.store)
 		
 	def getWidgetsFromPath(self, screen, *path) :
 		widgets = [self.root.get_screen(screen)]
