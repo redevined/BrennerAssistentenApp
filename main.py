@@ -2,8 +2,7 @@
 
 import os, htmlport, json
 from datetime import datetime, date, time
-# from androidhelper import Android
-from androidfake import Android
+from interface import Android
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -68,7 +67,7 @@ class AddRow(FloatLayout) :
 			ind[indname] = [info]
 		
 		app.getWidgetsFromPath("export", FloatLayout, ScrollView, ExportStack)[0].update()
-		droid.makeToast("Course saved.")
+		droid.info("Course saved.")
 	
 	def delCourse(self) :
 		app.store["courses"].remove(self.course)
@@ -108,7 +107,7 @@ class InitScreen(Screen) :
 	def createName(self) :
 		name = app.getWidgetsFromPath("init", FloatLayout, TextInput)[0].text
 		app.store["user"] = name
-		droid.makeToast("Welcome " + name + ".")
+		droid.info("Welcome " + name + ".")
 
 
 class MainScreen(Screen) :
@@ -129,23 +128,10 @@ class MainScreen(Screen) :
 		return " - ".join(str(t).rsplit(":", 1)[0] for t in self._time)
 	
 	def setDate(self) :
-		droid.dialogCreateDatePicker(self._date.year, self._date.month, self._date.day)
-		droid.dialogShow()
-		res = droid.dialogGetResponse().result
-		droid.dialogDismiss()
-		
-		self._date = date(res["year"], res["month"], res["day"])
+		self._date = droid.getDateDialogResponse(self._date.year, self._date.month, self._date.day)
 	
 	def setTime(self) :
-		def getResponse(t) :
-			droid.dialogCreateTimePicker(t.hour, t.minute, True)
-			droid.dialogShow()
-			res = droid.dialogGetResponse().result
-			droid.dialogDismiss()
-			
-			return time(res["hour"], res["minute"])
-		
-		self._time = [getResponse(t) for t in self._time]
+		self._time = [droid.getTimeDialogResponse(t.hour, t.minute) for t in self._time]
 
 
 class AddScreen(Screen) :
@@ -170,10 +156,10 @@ class ExportScreen(Screen) :
 		error = htmlport.export(app.store["user"], path, ind)
 		
 		if error :
-			droid.makeToast(error)
+			droid.info(error)
 		else :
 			app.store["indices"] = { key: value for (key, value) in app.store["indices"].items() if key not in selected }
-			droid.makeToast("Successfully exported accounting.")
+			droid.info("Successfully exported accounting.")
 		
 		app.getWidgetsFromPath("export", FloatLayout, ScrollView, ExportStack)[0].update()
 
