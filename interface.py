@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 
 from datetime import date, time
-from jnius import autoclass
+from jnius import autoclass, cast
+from android import activity
+from android.runnable import run_on_ui_thread
 
 
 class Android :
 
 	def __init__(self) :
-		self.CONTEXT = autoclass("android.content.Context")
+		self.CONTEXT = autoclass("org.renpy.android.PythonActivity").mActivity
 		self.toast = autoclass("android.widget.Toast")
 		self.dateDialog = autoclass("android.app.DatePickerDialog")
 		self.timeDialog = autoclass("android.app.TimePickerDialog")
 	
+	@run_on_ui_thread
 	def info(self, msg) :
-		self.toast.makeText(self.CONTEXT, msg, self.toast.LENGTH_SHORT).show()
+		s = autoclass("java.lang.String")
+		self.toast.makeText(self.CONTEXT, cast("java.lang.CharSequence", s(msg)), self.toast.LENGTH_SHORT).show()
 	
 	def getDateDialogResponse(self, y, m, d) :
 		callback = self.dateDialog.OnDateSetListener()
